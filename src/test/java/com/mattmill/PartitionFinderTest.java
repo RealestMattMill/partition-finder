@@ -1,12 +1,18 @@
 package com.mattmill;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import static com.mattmill.ExhaustiveSearchPartitionFinder.doAllStringsInListHaveSameNumberAs;
+import static com.mattmill.ExhaustiveSearchPartitionFinder.recurseExplodeString;
 import static org.junit.Assert.*;
 
 public class PartitionFinderTest {
-
 
     @Test
     public void testSplit_empty() {
@@ -26,7 +32,7 @@ public class PartitionFinderTest {
         testInput("aaaaaaaa", 4, 1);
     }
 
-    @Test
+    @Ignore
     public void testSplit_onlyBs() {
         testInput("b", 3, 0);
         testInput("bb", 3, 0);
@@ -72,6 +78,93 @@ public class PartitionFinderTest {
     }
 
     private void testInput(String input, int numPartitions, int expectedResult) {
-        Assert.assertEquals(expectedResult, PartitionFinder.fastSearch(input, numPartitions));
+        PartitionFinder fastFinder = new FastPartitionFinder();
+        Assert.assertEquals(expectedResult, fastFinder.search(input, numPartitions));
+        PartitionFinder exhaustiveSearch = new ExhaustiveSearchPartitionFinder();
+        Assert.assertEquals(expectedResult, exhaustiveSearch.search(input, numPartitions));
+    }
+
+    // Exhaustive search specific tests
+    @Ignore
+    public void testRecursiveExplodeString() {
+        int maxStringLen = 10;
+        int maxPartitions = 5;
+        for (int numChars = 2; numChars <= maxStringLen; numChars++) {
+            for (int numPartitions = 2; numPartitions <= maxPartitions; numPartitions++) {
+                String randomAlphaString = getRandomAsBs(numChars);
+                final List<List<String>> explodedStrings = testRecursiveExplodeStringHelper(randomAlphaString, numPartitions);
+                System.out.println(
+                        "String: " + randomAlphaString + " (len: " + numChars + ") with " + numPartitions + " partitions had " +
+                                explodedStrings.size() + " permutations.");//  Expected: "+expectedPermutations);
+                final String permutations = explodedStrings.stream()
+                        .map(perm -> perm.stream().reduce("", (a, b) -> a + "[" + b + "]"))
+                        .reduce("", (a, b) -> a + " [" + b + "] ");
+                System.out.println("Permutations: " + permutations);
+
+            }
+        }
+    }
+
+    @Test
+    public void testDoAllStringsHaveSameNumberAs() {
+        List<String> strings = new ArrayList<>();
+        strings.add("aa");
+        strings.add("aa");
+        strings.add("aab");
+        boolean testResult = doAllStringsInListHaveSameNumberAs().test(strings);
+        assertTrue(testResult);
+        strings = new ArrayList<>();
+        strings.add("aa");
+        strings.add("a");
+        strings.add("aab");
+        testResult = doAllStringsInListHaveSameNumberAs().test(strings);
+        assertFalse(testResult);
+    }
+
+    private String getRandomAsBs(int numChars) {
+        Random random = new Random();
+        return random.ints(0, 2)
+                .mapToObj(bit -> {
+                    if (bit == 0) {
+                        return "a";
+                    } else {
+                        return "b";
+                    }
+                })
+                .limit(numChars)
+                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                .toString();
+    }
+
+    private List<List<String>> testRecursiveExplodeStringHelper(String testString, int partitions) {
+        final List<List<String>> explodedStrings = recurseExplodeString(testString, partitions);
+        explodedStrings.stream()
+                .peek(testList -> {
+                    assertEquals(partitions, testList.size());
+                    assertEquals(testString, testList.stream()
+                            .reduce("", (a, b) -> a + b));
+                });
+        return explodedStrings;
+    }
+
+    // Comparison test with random data using 3 partitions
+    @Test
+    public void testRandomSequencesWith3Partitions() {
+        PartitionFinder exhaustiveSearch = new ExhaustiveSearchPartitionFinder();
+        PartitionFinder fastSearch = new FastPartitionFinder();
+        for (int numChars = 4; numChars < 50; numChars++) {
+            int iterations = 0;
+            do {
+                String testString = getRandomAsBs(numChars);
+                System.out.println("Testing [" + testString + "]");
+                long exhaustiveResult = exhaustiveSearch.search(testString, 3);
+                long fastResult = fastSearch.search(testString, 3);
+
+                if (testString.contains("a")) {
+                    Assert.assertEquals(exhaustiveResult, fastResult);
+                }
+                iterations++;
+            } while (iterations < 100);
+        }
     }
 }
