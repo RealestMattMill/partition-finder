@@ -6,6 +6,5 @@ package com.mattmill;
  * ways that you can partition the String such that each partition has an equal number of A's.
  */
 public interface PartitionFinder {
-
     long search(String theString, int numPartitions);
 }

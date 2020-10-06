@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static com.mattmill.App.getRandomAsBs;
 import static com.mattmill.ExhaustiveSearchPartitionFinder.doAllStringsInListHaveSameNumberAs;
 import static com.mattmill.ExhaustiveSearchPartitionFinder.recurseExplodeString;
 import static org.junit.Assert.*;
@@ -119,21 +120,6 @@ public class PartitionFinderTest {
         strings.add("aab");
         testResult = doAllStringsInListHaveSameNumberAs().test(strings);
         assertFalse(testResult);
-    }
-
-    private String getRandomAsBs(int numChars) {
-        Random random = new Random();
-        return random.ints(0, 2)
-                .mapToObj(bit -> {
-                    if (bit == 0) {
-                        return "a";
-                    } else {
-                        return "b";
-                    }
-                })
-                .limit(numChars)
-                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
-                .toString();
     }
 
     private List<List<String>> testRecursiveExplodeStringHelper(String testString, int partitions) {
