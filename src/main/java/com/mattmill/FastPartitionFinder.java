@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class FastPartitionFinder implements PartitionFinder{
+public class FastPartitionFinder implements PartitionFinder {
     @Override
     public long search(String theString, int numPartitions) {
         if (numPartitions < 2 || theString.isEmpty()) {

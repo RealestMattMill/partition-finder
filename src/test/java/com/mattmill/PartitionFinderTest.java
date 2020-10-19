@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static com.mattmill.App.getRandomAsBs;
 import static com.mattmill.ExhaustiveSearchPartitionFinder.doAllStringsInListHaveSameNumberAs;

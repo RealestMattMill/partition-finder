@@ -1,6 +1,5 @@
 package com.mattmill;
 
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -15,8 +14,8 @@ public class App {
         PartitionFinder fastSearch = new FastPartitionFinder();
         PartitionFinder exhaustiveSearch = new ExhaustiveSearchPartitionFinder();
 
-        exerciseApproach(exhaustiveSearch, 5, 1000);
-        exerciseApproach(fastSearch, 10, 1000);
+        exerciseApproach(exhaustiveSearch, 5, 750);
+        exerciseApproach(fastSearch, 10, 750);
 
         int maxChars = 20;
         int maxPartitions = 7;
@@ -30,22 +29,30 @@ public class App {
     // Detects how large of a String the strategy can process in some time limit
     public static void exerciseApproach(PartitionFinder impl, int maxPartitions, int timeLimitMillis) {
         NumberFormat numberFormat = NumberFormat.getIntegerInstance(Locale.US);
+
         for (int numPartitions = 3; numPartitions <= maxPartitions; numPartitions++) {
-            int numChars = 1;
+            // What was the last number of characters we succeeded with?
+            // We'll use this value to reset and keep going with a smaller step size
             int lastNumChars = 1;
-            while (true) {
-                Instant start = Instant.now();
-                impl.search(getRandomAsBs(numChars), numPartitions);
-                Instant stop = Instant.now();
-                if (Duration.between(start, stop).toMillis() > timeLimitMillis) {
-                    System.out
-                            .println("Handled " + numberFormat.format(lastNumChars) + " characters with " + numPartitions + " partitions in under " + timeLimitMillis + " ms");
-                    break;
+            int numChars = 1;
+            for(double stepMultiplier = 3.0; stepMultiplier > 1; stepMultiplier = stepMultiplier * .6f){
+                numChars = lastNumChars;
+                while (true) {
+                    Instant start = Instant.now();
+                    impl.search(getRandomAsBs(numChars), numPartitions);
+                    Instant stop = Instant.now();
+                    if (Duration.between(start, stop).toMillis() > timeLimitMillis) {
+                        break;
+                    }
+                    lastNumChars = numChars;
+                    numChars = (int) (numChars * stepMultiplier);
                 }
-                lastNumChars = numChars;
-                numChars = numChars * 2;
             }
+            System.out.println("Handled " + numberFormat.format(lastNumChars) +
+                    " characters with " + numPartitions +
+                    " partitions in under " + timeLimitMillis + " ms");
         }
+
     }
 
     // Reports how long, on average, an approach takes to find a result for

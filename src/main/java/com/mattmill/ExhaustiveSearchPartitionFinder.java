@@ -30,9 +30,6 @@ public class ExhaustiveSearchPartitionFinder implements PartitionFinder {
 
     public static List<List<String>> recurseExplodeString(String s, int partitionsRemaining) {
         List<List<String>> returnList = new ArrayList<>();
-        if (partitionsRemaining == 1) {
-            returnList.add(Collections.singletonList(s));
-        }
         if (partitionsRemaining == 2) {
             // base case. return any combinations that are still available
             for (int i = 1; i < s.length(); i++) {
